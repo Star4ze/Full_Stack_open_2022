@@ -1,8 +1,6 @@
 import { useState, useEffect } from 'react'
 import personsService from './services/personsService'
 
-import './App.css'
-
 const Filter = ({ handleSearchChange }) =>
   <div>
     filter shown with <input onChange={handleSearchChange} />
@@ -36,22 +34,27 @@ const Persons = (props) => {
 }
 
 const Notification = ({ message }) => {
-  if (message === null) {
-    return null
+  if (message) {
+    const style = {
+      color: message.type === 'alert' ? 'red' : 'green',
+      background: 'lightgrey',
+      fontSize: 20,
+      borderStyle: 'solid',
+      borderRadius: 5,
+      padding: 10,
+      marginBottom: 10
+    }
+    return <div style={style}>{message}</div>
   }
-  else {
-    return (
-      <div className='error'>
-        {message}
-      </div>
-    )}
+  else
+    return null
 }
 
 const App = () => {
   const [persons, setPersons] = useState([])
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
-  const [notification, setNotification] = useState('')
+  const [notification, setNotification] = useState()
 
   const [handleSearch, setSearch] = useState([])
 
@@ -85,17 +88,27 @@ const App = () => {
       personsService
         .create(nameObject)
         .then(response => {
+          setPersons(persons.concat(response.data))
           setNotification(`${newName} added`)
           setTimeout(() => { setNotification(null) }, 5000)
-          setPersons(persons.concat(response.data))
           setNewName('')
           setNewNumber('')
+        }).catch(error => {
+          setNotification(error.response.data.error)
+          setTimeout(() => { setNotification(null) }, 5000)
+          console.log(error.response.data.error)
         })
     }
     else {
       if (window.confirm(`${newName} is already added to phonebook replace old number with a new one?`)) {
         const nameObject = { name: newName, number: newNumber }
-        personsService.update(duplicate.id, nameObject)
+        personsService
+          .update(duplicate.id, nameObject)
+          .catch(error => {
+            setNotification(error.response.data.error)
+            setTimeout(() => { setNotification(null) }, 5000)
+            console.log(error.response.data.error)
+          })
         const index = persons.indexOf(duplicate)
         const newArr = [...persons]
         newArr[index] = nameObject
@@ -110,17 +123,16 @@ const App = () => {
     if (window.confirm(`Delete ${person.name}?`)) {
       personsService
         .remove(person.id)
-        .catch(() => {setNotification(`Information of ${person.name} has already removed from server`)})
+        .catch(() => { setNotification(`Information of ${person.name} has already removed from server`) })
         .then(() => {
-        const index = persons.indexOf(person)
-        setTimeout(() => { setNotification(null) }, 5000)
-        const newArr = [...persons.slice(0, index), ...persons.slice(index + 1, persons.length)]
-        setPersons(newArr)
-      })
+          const index = persons.indexOf(person)
+          setTimeout(() => { setNotification(null) }, 5000)
+          const newArr = [...persons.slice(0, index), ...persons.slice(index + 1, persons.length)]
+          setPersons(newArr)
+        })
     }
   }
-
-
+  
 
   return (
     <div>

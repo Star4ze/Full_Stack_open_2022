@@ -4,6 +4,7 @@ import axios from 'axios'
 //($env:REACT_APP_API_KEY="ecd62f67e4474584b5ea76f274d83bf1") -and (npm start)
 
 const CountryOverview = (country) => {
+	// if ( weather === null ) return null	this how its done
 	const [weather, setWeather] = useState({ "weather": [{"icon": "0" }],"main": { "temp": 0},"wind": { "speed": 0, }})
 
 	useEffect(() => {
@@ -55,7 +56,7 @@ const Search = (props) => {
 
 function App() {
 	const [countries, setCountries] = useState([])
-	const [handleSearch, setSearch] = useState([])
+	const [handleSearch, setSearch] = useState('')
 
 	const handleSearchChange = (event) => setSearch(event.target.value)
 
